@@ -3,13 +3,13 @@
 --[[
 	Click System Backend
 	this script contains:
-	• OOP with metatables
-	• Delta time based generators
-	• DataStore retry logic
-	• MarketplaceService usage
-	• Server click handling
-	• Roblox API usage
-	• Memory save player session management
+	OOP with metatables
+	Delta time based generators
+	DataStore retry logic
+	MarketplaceService usage
+	Server click handling
+	Roblox API usage
+	Memory save player session management
 ]]
 
 local Players = game:GetService("Players")
@@ -17,7 +17,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local AddClick: RemoteEvent = ReplicatedStorage:WaitForChild("AddClick") :: RemoteEvent
+local AddClick: RemoteEvent = ReplicatedStorage:WaitForChild("AddClick")
 local ClickStore = DataStoreService:GetDataStore("AdvancedClickData_V1")
 local DATA_RETRY_COUNT = 5
 local DATA_RETRY_DELAY = 2
@@ -26,7 +26,7 @@ local GAMEPASS_2X = 1585719373
 local GAMEPASS_4X = 1584858573
 local GAMEPASS_8X = 1584134109
 
--- SESSION CLASS
+-- Session Class
 
 type PlayerSession = {
 	Player: Player,
@@ -40,7 +40,7 @@ type PlayerSession = {
 local Session = {}
 Session.__index = Session
 
--- SAFE DATASTORE
+-- Datastore
 
 local function safeGetAsync(userId: number)
 	for attempt = 1, DATA_RETRY_COUNT do
@@ -76,7 +76,7 @@ local function safeSetAsync(userId: number, data: any)
 	return false
 end
 
--- MARKETPLACE CHECK
+-- Check Marketplace
 
 local function ownsPass(player: Player, passId: number): boolean
 	local success, result = pcall(function()
@@ -86,7 +86,7 @@ local function ownsPass(player: Player, passId: number): boolean
 	return success and result
 end
 
--- SESSION METHODS
+-- Session Methods
 
 function Session.new(player: Player): PlayerSession
 	local self = setmetatable({}, Session)
@@ -162,11 +162,11 @@ function Session:addClick(amount: number)
 	self.Clicks.Value += amount * self.Multiplier.Value
 end
 
--- SESSION MANAGER
+-- Session Manager
 
 local Sessions: {[Player]: PlayerSession} = {}
 
--- HEARTBEAT GENERATOR
+-- Heartbeat Generator
 
 RunService.Heartbeat:Connect(function(dt)
 	for player, session in pairs(Sessions) do
@@ -194,7 +194,7 @@ RunService.Heartbeat:Connect(function(dt)
 	end
 end)
 
--- PLAYER LIFECYCLE
+-- Player Lifecycle
 
 Players.PlayerAdded:Connect(function(player)
 	local session = Session.new(player)
@@ -212,7 +212,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 end)
 
--- GAMEPASS PURCHASE HANDLING
+-- Gamepass Purchase
 
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
 	if not purchased then
@@ -227,7 +227,7 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passI
 	session:refreshPasses()
 end)
 
--- REMOTE CLICK HANDLING
+-- Remote Click
 
 AddClick.OnServerEvent:Connect(function(player)
 	local session = Sessions[player]
@@ -239,7 +239,7 @@ AddClick.OnServerEvent:Connect(function(player)
 	session:addClick(1)
 end)
 
--- SHUTDOWN SAVE
+-- Shuttdown save
 
 game:BindToClose(function()
 	for player, session in pairs(Sessions) do
