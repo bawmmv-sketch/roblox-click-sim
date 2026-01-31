@@ -25,6 +25,7 @@ local GAMEPASS_AUTO = 1586277217
 local GAMEPASS_2X = 1585719373
 local GAMEPASS_4X = 1584858573
 local GAMEPASS_8X = 1584134109
+local BuyUpgrade: RemoteEvent = ReplicatedStorage:WaitForChild("BuyUpgrade")
 
 -- Session Class
 
@@ -35,6 +36,7 @@ type PlayerSession = {
 	LastSave: number,
 	OwnedPasses: {[number]: boolean},
 	Accumulator: number,
+	UpgradeLevel: IntValue,
 }
 
 local Session = {}
@@ -89,6 +91,12 @@ end
 -- Session Methods
 
 function Session.new(player: Player): PlayerSession
+	local upgrade = Instance.new("IntValue")
+	upgrade.Name = "UpgradeLevel"
+	upgrade.Value = 1
+	upgrade.Parent = player
+	self.UpgradeLevel = upgrade
+
 	local self = setmetatable({}, Session)
 
 	self.Player = player
@@ -120,6 +128,7 @@ function Session:loadData()
 
 	if data then
 		self.Clicks.Value = data.Clicks or 0
+		self.UpgradeLevel.Value = data.UpgradeLevel or 1
 
 		local lastTime = data.LastTime or os.time()
 		local offlineSeconds = os.time() - lastTime
@@ -134,6 +143,7 @@ function Session:saveData()
 	local payload = {
 		Clicks = self.Clicks.Value,
 		LastTime = os.time(),
+		UpgradeLevel = self.UpgradeLevel.Value,
 	}
 
 	safeSetAsync(self.Player.UserId, payload)
@@ -159,7 +169,11 @@ function Session:refreshPasses()
 end
 
 function Session:addClick(amount: number)
-	self.Clicks.Value += amount * self.Multiplier.Value
+	function Session:addClick(amount: number)
+	local power = amount * self.Multiplier.Value * self.UpgradeLevel.Value
+	self.Clicks.Value += power
+end
+
 end
 
 -- Session Manager
@@ -238,6 +252,25 @@ AddClick.OnServerEvent:Connect(function(player)
 	-- Server authoritative validation
 	session:addClick(1)
 end)
+
+-- Buy Upgrade 
+
+BuyUpgrade.OnServerEvent:Connect(function(player)
+	local session = Sessions[player]
+	if not session then
+		return
+	end
+
+	local cost = session.UpgradeLevel.Value * 100
+
+	if session.Clicks.Value < cost then
+		return
+	end
+
+	session.Clicks.Value -= cost
+	session.UpgradeLevel.Value += 1
+end)
+
 
 -- Shuttdown save
 
