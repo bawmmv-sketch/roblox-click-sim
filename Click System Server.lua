@@ -91,18 +91,18 @@ end
 -- Session Methods
 
 function Session.new(player: Player): PlayerSession
-	local upgrade = Instance.new("IntValue")
-	upgrade.Name = "UpgradeLevel"
-	upgrade.Value = 1
-	upgrade.Parent = player
-	self.UpgradeLevel = upgrade
-
 	local self = setmetatable({}, Session)
 
 	self.Player = player
 	self.LastSave = os.clock()
 	self.Accumulator = 0
 	self.OwnedPasses = {}
+
+	local upgrade = Instance.new("IntValue")
+	upgrade.Name = "UpgradeLevel"
+	upgrade.Value = 1
+	upgrade.Parent = player
+	self.UpgradeLevel = upgrade
 
 	-- Leaderstats creation
 	local leaderstats = Instance.new("Folder")
@@ -169,7 +169,6 @@ function Session:refreshPasses()
 end
 
 function Session:addClick(amount: number)
-	function Session:addClick(amount: number)
 	local power = amount * self.Multiplier.Value * self.UpgradeLevel.Value
 	self.Clicks.Value += power
 end
