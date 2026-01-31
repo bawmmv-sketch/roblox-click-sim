@@ -173,8 +173,6 @@ function Session:addClick(amount: number)
 	self.Clicks.Value += power
 end
 
-end
-
 -- Session Manager
 
 local Sessions: {[Player]: PlayerSession} = {}
